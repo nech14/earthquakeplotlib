@@ -29,6 +29,36 @@ C_LIMITS ={
     'tec_adjusted': [0,50,'TECu'],
 }
 
+DEFAULT_PARAMS = {'font.size': 20,
+                  'figure.dpi': 300,
+                  'font.family': 'sans-serif',
+                  'font.style': 'normal',
+                  'font.weight': 'light',
+                  'legend.frameon': True,
+                  'font.variant' : 'small-caps',
+                  'axes.titlesize' : 20,
+                  'axes.labelsize' : 20,
+                  'xtick.labelsize' : 18,
+                  'xtick.major.pad': 5,
+                  'ytick.major.pad': 5,
+                  'xtick.major.width' : 2.5,
+                  'ytick.major.width' : 2.5,
+                  'xtick.minor.width' : 2.5,
+                  'ytick.minor.width' : 2.5,
+                  'ytick.labelsize' : 20}
+
+TIME_FORMAT = '%Y-%m-%d %H:%M:%S.%f'
+
+EPICENTERS = {'01:17': {'lat': 37.220,
+                        'lon': 37.019,
+                        'time': datetime(2023, 2, 6, 1, 17, 34)},
+              '10:24': {'lat': 38.016,
+                        'lon': 37.206,
+                        'time': datetime(2023, 2, 6, 10, 24, 50)}
+             }
+
+_UTC = tz.gettz('UTC')
+
 RE_meters = 6371000
 
 
@@ -48,7 +78,8 @@ def prepare_layout(ax,
     ax.add_feature(feature.BORDERS, linestyle=':', linewidth=2)
     ax.add_feature(feature.LAKES, alpha=0.5)
     ax.add_feature(feature.RIVERS)
-    
+
+
 #Plot data for one time moment
 def plot_map(plot_times, data, type_d,
              lon_limits=(-180, 180), 
@@ -58,7 +89,7 @@ def plot_map(plot_times, data, type_d,
              markers=[], 
              sort=False,
              use_alpha=False,
-             clims=C_LIMITS, 
+             clims=C_LIMITS,
              savefig=''):
     """
     Plotting data
@@ -68,7 +99,7 @@ def plot_map(plot_times, data, type_d,
             <values> list of values
             <type_d> string type of data going to be plotted
     output - figure
-    """  
+    """
     assert len(plot_times) == ncols
     if isinstance(type_d, list):
         assert len(type_d) == nrows
