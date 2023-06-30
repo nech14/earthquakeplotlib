@@ -1,0 +1,12 @@
+requests
+h5py
+numpy
+matplotlib
+cartopy
+scipy
+pathlib
+matplotlib
+
+[test]
+pytest
+coverage

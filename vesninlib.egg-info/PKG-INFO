@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: vesninlib
+Version: 1.0
+Home-page: 
+Author: Artem Vesnin
+Author-email: artemvesnin@gmail.com
+License: MIT
+Requires-Python: >=3
+Provides-Extra: test
