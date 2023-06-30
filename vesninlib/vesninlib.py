@@ -31,6 +31,7 @@ C_LIMITS ={
 
 RE_meters = 6371000
 
+
 def prepare_layout(ax, 
                    lon_limits,
                    lat_limits):
