@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='vesninlib',
-    version='1.0.2',
+    version='1.2',
     description='',
     license='MIT',
     author='Artem Vesnin',
@@ -12,8 +12,7 @@ setup(
     install_requires=['h5py', 'datetime',
                       'numpy', 'matplotlib',
                       'cartopy', 'dateutil',
-                      'scipy', 'matplotlib',
-                      'pathlib'],
+                      'scipy', 'pathlib'],
     extras_require={
         'test': [
             'pytest',
