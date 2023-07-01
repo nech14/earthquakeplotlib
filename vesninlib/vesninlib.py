@@ -1,24 +1,21 @@
-import requests
 import h5py
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as dt
-import matplotlib.dates as mdates
 import datetime
 import cartopy.crs as ccrs
 import matplotlib.dates as mdates
-from collections import defaultdict
 from numpy import pi, sin, cos, arccos, arcsin
 from scipy.stats import norm
 from cartopy import feature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
-from datetime import (datetime, 
+from datetime import (datetime,
                       timedelta)
 from dateutil import tz
 from collections import defaultdict
-from pathlib import Path
 from scipy.interpolate import UnivariateSpline
+
+
 
 C_LIMITS ={
     'ROTI': [-0,0.5,'TECu/min'],
@@ -89,7 +86,7 @@ def plot_map(plot_times, data, type_d,
              markers=[], 
              sort=False,
              use_alpha=False,
-             clims=C_LIMITS,
+             clims=C_LIMITS, 
              savefig=''):
     """
     Plotting data
@@ -99,7 +96,7 @@ def plot_map(plot_times, data, type_d,
             <values> list of values
             <type_d> string type of data going to be plotted
     output - figure
-    """
+    """  
     assert len(plot_times) == ncols
     if isinstance(type_d, list):
         assert len(type_d) == nrows
@@ -194,6 +191,7 @@ def retrieve_data(file, type_d, times=[]):
         data[time] = f_in['data'][str_time][:]
     return data
 
+
 def _merge_structured_arrays(arrays):
     ns = [len(array) for array in arrays]
     array_out = arrays[0].copy()
@@ -203,6 +201,7 @@ def _merge_structured_arrays(arrays):
         array_out[N:N + ns[i]] = arrays[i]
         N = N + ns[i]
     return array_out
+
 
 def retrieve_data_multiple_source(files, type_d, times=[]):
     datas = defaultdict(list)
@@ -246,7 +245,6 @@ def plot_maps(prod_files, prods, epc, clims=None, times=None, scale=1):
                  clims=C_LIMITS)
 
 
-
 def get_sites_coords(local_file, exclude_sites = [],
                     min_lat=-90, max_lat=90,
                     min_lon=-180, max_lon=180,):    
@@ -266,6 +264,7 @@ def get_sites_coords(local_file, exclude_sites = [],
     f.close()
     return coords
 
+
 def select_visible_sats_data(local_file, sites, tcheck):
     f = h5py.File(local_file)
     data = dict()
@@ -281,6 +280,7 @@ def select_visible_sats_data(local_file, sites, tcheck):
                                    'elevation': f[site][sat]['elevation'][:]}
     f.close()
     return data
+
 
 def get_visible_sats_names(data):
     sats = list()
@@ -312,6 +312,7 @@ def select_sats_by_params(data, sats, tcheck, min_sats_number=5, **kwargs):
     sats_count = {sat: c for sat, c in sats_count.items() if c > min_sats_number}
     return sats_count
 
+
 def select_reoder_data(data, sats_count):
     _data = {sat: list() for sat in sats_count}
     for site in data:
@@ -323,7 +324,41 @@ def select_reoder_data(data, sats_count):
     return _data
 
 
-def plot_single_sat(data_plot, sat, epc, plot_product, 
+def plot_single_sat(data_plot, sat, epc, plot_product,  # use bacause i don't want to reinstal vesninlib!!!!!
+                    limits=(3600, 3600),
+                    shift=0.5,
+                    site_labels=False,
+                    namefile='data/result/11.png'):
+    i = 0
+    plt.figure(figsize=(6, 13))
+    plt.rcParams.update(DEFAULT_PARAMS)
+    plot_ax = plt.axes()
+
+    sites = list()
+    locs = list()
+    for d in data_plot[sat]:
+        _t = d['time']
+        _val = d[plot_product]
+        plt.plot(_t, _val + i * shift, marker='.')
+        locs.append(i * shift)
+        i = i + 1
+        plt.axvline(x=epc['time'], color='black', linewidth=3)
+        sites.append(d['site'])
+    plt.xlim(epc['time'] - timedelta(0, limits[0]),
+             epc['time'] + timedelta(0, limits[1]), )
+    locs = [-2 * shift, -shift] + locs + [i * shift, (i + 1) * shift]
+    sites = [''] * 2 + sites + [''] * 2
+    if site_labels:
+        plt.yticks(locs, sites)
+    plt.ylim(-2 * shift, (i + 1) * shift)
+    plot_ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    plt.title('Satellite ' + sat)
+    plt.grid()
+    plt.xlabel('UTC for February 6, 2023')
+    plt.savefig(namefile)
+
+
+def plot_single_sat_old(data_plot, sat, epc, plot_product,
                     limits=(3600,3600),
                     shift=0.5,
                     site_labels=False):
@@ -427,8 +462,6 @@ def get_dtecs(data,
     return dtecs
 
 
-
-
 def sub_ionospheric(s_lat, s_lon, hm, az, el, R=RE_meters):
     """
     Calculates subionospheric point and delatas from site
@@ -469,6 +502,7 @@ def great_circle_distance_numpy(late, lone, latp, lonp, R=RE_meters):
     cosgamma = sin(late) * sin(latp) + cos(late) * cos(latp) * cos(dlon)
     return R * arccos(cosgamma)
 
+
 def calculate_distances_from_epicenter(data, coords, sat, elat, elon):
     for _data in data[sat]:
         sites_coords = coords[_data['site']]
@@ -482,8 +516,33 @@ def calculate_distances_from_epicenter(data, coords, sat, elat, elon):
                                         R = RE_meters + 300000)
         _data['distance'] = d[0]
 
+
+def fit_and_plot_distribution(data, xmin=0, xmax=4000, namefile='data/result/10.png'):
+    plt.figure(figsize=(18, 9))
+    mu, std = norm.fit(data)
+    plt.grid()
+    # Plot the histogram.
+    counts, edges, bars = plt.hist(data, bins=20, density=True, alpha=0.6, color='g')
+    # plt.bar_label(bars)
+    y = ((1 / (np.sqrt(2 * np.pi) * std)) *
+         np.exp(-0.5 * (1 / std * (edges - mu)) ** 2))
+    # Plot the PDF.
+    x = np.linspace(xmin, xmax, 100)
+    p = norm.pdf(x, mu, std)  # * len(data) * len(data)
+    plt.plot(x, p, 'k', linewidth=3, color='black')
+    title = "Fit results: mean = %.2f m/s,  STD = %.2f m/s" % (mu, std)
+    plt.xlabel('velocity, m/s')
+
+    ytick = [i / 10000 * 1.03213 for i in range(0, 13, 2)]
+    ylables = [round(i) for i in range(0, 13, 2)]
+    plt.yticks(ytick, ylables)
+    plt.ylabel('Occuranes')
+    plt.title(title)
+    plt.ylim(0, 13 / 10000 * 1.03213)
+    plt.savefig(namefile)
+
         
-def fit_and_plot_distribution(data, xmin=0, xmax=4000):
+def fit_and_plot_distribution_old(data, xmin=0, xmax=4000):
     print(len(data))
     plt.figure(figsize=(18, 9))
     mu, std = norm.fit(data)
@@ -510,11 +569,6 @@ def fit_and_plot_distribution(data, xmin=0, xmax=4000):
     plt.show()
 
 
-
-
-
-
-
 def get_dist_time(data, eq_location, direction='all'):
     x, y, c = [], [], []
     for time, map_data in data.items():
@@ -535,7 +589,7 @@ def get_dist_time(data, eq_location, direction='all'):
         elif direction == "west":
             inds = lats <= _eq_location["lon"]
         else:
-            inds = numpy.isreal(lats)
+            inds = np.isreal(lats)
         lats = lats[inds]
         lons = lons[inds]
         vals = vals[inds]
@@ -544,7 +598,7 @@ def get_dist_time(data, eq_location, direction='all'):
         plats[:] = _eq_location["lat"]
         plons[:] = _eq_location["lon"]
 
-        dists = great_circle_distance_numpy(lats,lons, 
+        dists = great_circle_distance_numpy(lats, lons,
                                             plats, plons)
         
 
@@ -553,7 +607,11 @@ def get_dist_time(data, eq_location, direction='all'):
         c.extend(vals)
     return x, y, c
 
-def plot_distance_time(x, y, c, ptype, sort = True, line=dict(), clims=C_LIMITS, dmax=1750):
+
+
+
+
+def plot_distance_time(x, y, c, ptype, sort = True, data={}, clims=C_LIMITS, dmax=1750):
     c_abs = [abs(_c) for _c in c]
     if sort:    
         x = [i for _, i in sorted(zip(c_abs, x))]
@@ -582,15 +640,14 @@ def plot_distance_time(x, y, c, ptype, sort = True, line=dict(), clims=C_LIMITS,
         plt.axvline(x=params['time'], color='black', linewidth=3)
     cbar.ax.set_ylabel( clims[ptype][2], rotation=-90, va="bottom")
     plot_ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-    
+
+
 def plot_line(velocity, start, style='solid'):
     timestep = 30
     line = [velocity * timestep * i for i in range(13)]
     dtimes = [start + i * timedelta(0, timestep) for i in range(13)]
     plt.plot(dtimes, line, linestyle=style, color='black', zorder=5, linewidth=4)
     
-
-
 
 def spline_detrend(data, sm_f = 8):
     """
@@ -618,9 +675,6 @@ def spline_detrend(data, sm_f = 8):
         return data
 
 
-
-
-
 def plot_all_sats(local_file, site, product, shift=0.5):
     f = h5py.File(local_file)
     plt.figure(figsize=(10, 13))
@@ -643,7 +697,8 @@ def plot_all_sats(local_file, site, product, shift=0.5):
     plot_ax.axvline(x=datetime(2023, 2, 6, 10, 24), color='red')
     plot_ax.axvline(x=datetime(2023, 2, 6, 1, 17), color='red')
     plot_ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-    
+
+
 def plot_sites(local_file, plot_sat, sites, product, shift=0.5):
     f = h5py.File(local_file)
     plt.figure(figsize=(10, 13))
@@ -671,3 +726,5 @@ def plot_sites(local_file, plot_sat, sites, product, shift=0.5):
     plot_ax.axvline(x=datetime(2023, 2, 6, 10, 24), color='red')
     plot_ax.axvline(x=datetime(2023, 2, 6, 1, 17), color='red')
     plot_ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+
+

@@ -2,18 +2,17 @@ from setuptools import setup
 
 setup(
     name='vesninlib',
-    version='1.0',
+    version='1.2',
     description='',
     license='MIT',
     author='Artem Vesnin',
     author_email='artemvesnin@gmail.com',
     url='',
     packages=['vesninlib'],
-    install_requires=['requests', 'h5py',
-                      'numpy','matplotlib',
-                      'cartopy',
-                      'scipy',
-                      'pathlib', 'matplotlib'], # it is empty since we use standard python library
+    install_requires=['h5py', 'datetime',
+                      'numpy', 'matplotlib',
+                      'cartopy', 'dateutil',
+                      'scipy', 'pathlib'],
     extras_require={
         'test': [
             'pytest',
