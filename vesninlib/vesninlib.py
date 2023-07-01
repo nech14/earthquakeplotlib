@@ -1,14 +1,10 @@
-import requests
 import h5py
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as dt
-import matplotlib.dates as mdates
 import datetime
 import cartopy.crs as ccrs
 import matplotlib.dates as mdates
-from collections import defaultdict
 from numpy import pi, sin, cos, arccos, arcsin
 from scipy.stats import norm
 from cartopy import feature
@@ -17,7 +13,6 @@ from datetime import (datetime,
                       timedelta)
 from dateutil import tz
 from collections import defaultdict
-from pathlib import Path
 from scipy.interpolate import UnivariateSpline
 
 C_LIMITS ={
@@ -542,7 +537,7 @@ def get_dist_time(data, eq_location, direction='all'):
         plats[:] = _eq_location["lat"]
         plons[:] = _eq_location["lon"]
 
-        dists = great_circle_distance_numpy(lats,lons, 
+        dists = great_circle_distance_numpy(lats, lons,
                                             plats, plons)
         
 
@@ -552,7 +547,7 @@ def get_dist_time(data, eq_location, direction='all'):
     return x, y, c
 
 
-#data = retrieve_data("roti_10_24.h5", "ROTI")
+
 
 
 def plot_distance_time(x, y, c, ptype, sort = True, data={}, clims=C_LIMITS, dmax=1750):
@@ -670,3 +665,5 @@ def plot_sites(local_file, plot_sat, sites, product, shift=0.5):
     plot_ax.axvline(x=datetime(2023, 2, 6, 10, 24), color='red')
     plot_ax.axvline(x=datetime(2023, 2, 6, 1, 17), color='red')
     plot_ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+
+
