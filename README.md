@@ -62,7 +62,7 @@ plot_map(times, data, 'ROTI',
                  markers=[EPICENTERS['10:24']],
                  clims=C_LIMITS)
 ```
-**EPICENTERS** - coordinates and time of earthquake epicenter
+**EPICENTERS** - coordinates and time of earthquake epicenter  
 **lat_limits, lon_limits** - coordinates to scale the graphic
 
 ## Authors
