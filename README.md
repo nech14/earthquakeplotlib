@@ -1,4 +1,4 @@
-# Vesninlib - library for drawing eq graphics
+# Earthquakeplotlib- library for drawing eq graphics
 
 ## Data availability:
 Data of global GNSS network are available at https://simurg.space, ionosonde data availabel 
@@ -16,7 +16,7 @@ conda install cartopy
 ```
 ## Installation:
 ```
-pip install vesninlib
+pip install earthquakeplotlib
 ```
 
 Examples:
